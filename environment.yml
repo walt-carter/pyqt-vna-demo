@@ -1,0 +1,13 @@
+name: vna-demo
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12
+  - numpy
+  - matplotlib
+  - pytest
+  - ruff
+  - python-lsp-server
+  - pip
+  - pip:
+      - PyQt6

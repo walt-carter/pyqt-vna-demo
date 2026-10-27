@@ -1,0 +1,30 @@
+{
+  "products": [
+    {
+      "part_number": "CABLE-0.5M-DEMO",
+      "description": "Demo 0.5 m twinax cable assembly, 10 MHz to 40 GHz",
+      "sweep": { "start_hz": 10e6, "stop_hz": 40e9, "points": 801 },
+      "limits": [
+        { "start_hz": 10e6, "stop_hz": 20e9, "min_db": -2.0 },
+        { "start_hz": 20e9, "stop_hz": 40e9, "min_db": -3.0 }
+      ]
+    },
+    {
+      "part_number": "CABLE-1M-DEMO",
+      "description": "Demo 1 m twinax cable assembly, 10 MHz to 67 GHz (tight limit, expect FAIL)",
+      "sweep": { "start_hz": 10e6, "stop_hz": 67e9, "points": 1601 },
+      "limits": [
+        { "start_hz": 10e6, "stop_hz": 28e9, "min_db": -2.0 },
+        { "start_hz": 28e9, "stop_hz": 67e9, "min_db": -2.5 }
+      ]
+    },
+    {
+      "part_number": "CONN-MEZZ-DEMO",
+      "description": "Demo board-to-board connector, 10 MHz to 56 GHz",
+      "sweep": { "start_hz": 10e6, "stop_hz": 56e9, "points": 1201 },
+      "limits": [
+        { "start_hz": 10e6, "stop_hz": 56e9, "min_db": -3.5 }
+      ]
+    }
+  ]
+}
