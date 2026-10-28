@@ -8,11 +8,15 @@ to the UI actor.)
 
 from __future__ import annotations
 
+import logging
+
 from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from .analysis import evaluate
 from .config import Product
 from .instrument import Instrument
+
+logger = logging.getLogger(__name__)
 
 
 class SweepWorker(QObject):
@@ -34,5 +38,6 @@ class SweepWorker(QObject):
             freq, s21 = self._instrument.measure_s21_db()
             result = evaluate(freq, s21, self._product.limits)
             self.finished.emit(freq, s21, result)
-        except Exception as exc:  # report every failure to the operator, don't crash
+        except Exception as exc:  # report failures to the operator, don't crash
+            logger.exception("Sweep failed for %s", self._product.part_number)
             self.failed.emit(f"{type(exc).__name__}: {exc}")

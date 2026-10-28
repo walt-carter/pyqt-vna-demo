@@ -4,10 +4,11 @@ channels:
 dependencies:
   - python=3.12
   - numpy
-  - matplotlib
+  - matplotlib-base
   - pytest
   - ruff
   - python-lsp-server
   - pip
+  - pytest-qt
   - pip:
       - PyQt6

@@ -4,13 +4,19 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from PyQt6.QtCore import QThread
-from PyQt6.QtWidgets import (
-    QComboBox, QHBoxLayout, QLabel, QMainWindow, QPlainTextEdit, QPushButton,
-    QVBoxLayout, QWidget,
-)
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
+from PyQt6.QtCore import QThread
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QPlainTextEdit,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from .config import Product
 from .instrument import Instrument

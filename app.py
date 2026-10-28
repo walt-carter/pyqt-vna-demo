@@ -7,7 +7,12 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import sys
+
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+
 from pathlib import Path
 
 from PyQt6.QtWidgets import QApplication, QMessageBox
@@ -27,7 +32,7 @@ def main() -> int:
     try:
         products = load_products(args.config)
         instrument = VisaVNA(args.visa) if args.visa else SimulatedVNA()
-    except Exception as exc:
+    except (OSError, ValueError, ImportError) as exc:
         QMessageBox.critical(None, "Startup error", str(exc))
         return 1
 
