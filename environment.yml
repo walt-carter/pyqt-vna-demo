@@ -10,5 +10,6 @@ dependencies:
   - python-lsp-server
   - pip
   - pytest-qt
+  - pyinstaller
   - pip:
       - PyQt6

@@ -22,10 +22,29 @@ from vna_demo.instrument import SimulatedVNA, VisaVNA
 from vna_demo.main_window import MainWindow
 
 
+def config_dir() -> Path:
+    """Editable config lives next to the executable in a build,
+    and in the repo when run from source."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent / "config"
+    return Path(__file__).parent / "config"
+
+
+def resource_dir() -> Path:
+    """
+    Folder holding bundled data files, both when run from source
+    and a Pyinstaller build
+    """
+    if getattr(sys, "frozen", False):
+        return Path(sys._MEIPASS)
+    return Path(__file__).parent
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="PyQt VNA test demo")
-    parser.add_argument("--config", default=Path(__file__).parent / "config" / "products.json")
+    parser.add_argument("--config", default=config_dir().parent / "config" / "products.json")
     parser.add_argument("--visa", metavar="RESOURCE", help="VISA resource string for a real VNA")
+
     args = parser.parse_args()
 
     app = QApplication(sys.argv)

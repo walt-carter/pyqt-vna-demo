@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]          # runs when you push a tag like v0.1.0
+  workflow_dispatch:      # lets you test the build from the Actions tab without tagging
+
+permissions:
+  contents: write         # needed to create the Release
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt pytest-qt pyinstaller
+
+      - name: Run tests before building
+        run: python -m pytest -v
+
+      - name: Build Windows app
+        run: pyinstaller --noconfirm --windowed --name VNA-Test-Demo app.py
+
+      - name: Copy editable config next to the executable
+        run: Copy-Item -Recurse config dist/VNA-Test-Demo/config
+
+      - name: Smoke-test the executable
+        run: dist/VNA-Test-Demo/VNA-Test-Demo.exe --help
+
+      - name: Zip the app
+        run: Compress-Archive -Path dist/VNA-Test-Demo -DestinationPath VNA-Test-Demo-windows.zip
+
+      - name: Keep the build as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VNA-Test-Demo-windows
+          path: VNA-Test-Demo-windows.zip
+
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: VNA-Test-Demo-windows.zip
+          generate_release_notes: true
