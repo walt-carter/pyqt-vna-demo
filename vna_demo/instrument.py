@@ -21,7 +21,8 @@ class SweepSettings:
     stop_hz: float
     points: int
 
-    def validate(self) -> None:
+    def __post_init__(self):
+        """Check the results of the assignment"""
         if self.start_hz <= 0 or self.stop_hz <= self.start_hz:
             raise ValueError("Sweep must have 0 < start < stop.")
         if not 2 <= self.points <= 100_001:
