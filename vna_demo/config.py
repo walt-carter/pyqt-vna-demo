@@ -38,7 +38,6 @@ def load_products(path: str | Path) -> dict[str, Product]:
                 stop_hz=float(entry["sweep"]["stop_hz"]),
                 points=int(entry["sweep"]["points"]),
             )
-            sweep.validate()
             limits = tuple(
                 LimitSegment(float(seg["start_hz"]), float(seg["stop_hz"]), float(seg["min_db"]))
                 for seg in entry["limits"]

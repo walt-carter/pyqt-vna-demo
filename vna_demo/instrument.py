@@ -67,7 +67,6 @@ class SimulatedVNA(Instrument):
         return "SIMULATED,VNA-DEMO,0001,1.0"
 
     def configure(self, sweep: SweepSettings) -> None:
-        sweep.validate()
         self._sweep = sweep
 
     def measure_s21_db(self) -> tuple[np.ndarray, np.ndarray]:
