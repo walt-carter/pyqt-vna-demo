@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from pathlib import Path
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
@@ -11,6 +12,7 @@ from PyQt6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
+    QLineEdit,
     QMainWindow,
     QPlainTextEdit,
     QPushButton,
@@ -21,10 +23,10 @@ from PyQt6.QtWidgets import (
 from .config import Product
 from .instrument import Instrument
 from .worker import SweepWorker
-
+from .results import result_path, write_csv
 
 class MainWindow(QMainWindow):
-    def __init__(self, instrument: Instrument, products: dict[str, Product]):
+    def __init__(self, instrument: Instrument, products: dict[str, Product], results_dir: Path):
         super().__init__()
         self.setWindowTitle("VNA Test Demo")
         self.resize(1000, 700)
@@ -32,7 +34,9 @@ class MainWindow(QMainWindow):
         self._products = products
         self._thread: QThread | None = None
         self._worker: SweepWorker | None = None
+        self._results_dir = results_dir
 
+        
         # Controls
         self.part_combo = QComboBox()
         self.part_combo.addItems(sorted(products))
@@ -42,10 +46,17 @@ class MainWindow(QMainWindow):
         self.run_button.clicked.connect(self.start_sweep)
         self.verdict = QLabel("READY")
         self.verdict.setStyleSheet("font-size: 28px; font-weight: bold; padding: 4px 16px;")
+        self.serial_edit = QLineEdit()
+        self.serial_edit.setPlaceholderText("Scan or type serial number")
+        self.serial_edit.setClearButtonEnabled(True)
+        self.serial_edit.returnPressed.connect(self.start_sweep)        # Enter starts the sweep
+        self.serial_edit.textChanged.connect(self._update_run_enabled)
 
         controls = QHBoxLayout()
         controls.addWidget(QLabel("Part:"))
         controls.addWidget(self.part_combo)
+        controls.addWidget(QLabel("Serial:"))
+        controls.addWidget(self.serial_edit, stretch=1)   # let it take spare width
         controls.addWidget(self.run_button)
         controls.addStretch()
         controls.addWidget(self.verdict)
@@ -70,7 +81,9 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
 
         self._log(f"Connected: {instrument.identify()}")
+        self._log(f"Results folder: {results_dir}")
         self._show_description(self.part_combo.currentText())
+        self._update_run_enabled()
 
     # ---- helpers -------------------------------------------------------
     def _log(self, message: str) -> None:
@@ -86,10 +99,17 @@ class MainWindow(QMainWindow):
             f"font-size: 28px; font-weight: bold; padding: 4px 16px; color: white; background: {color};"
         )
 
+    def _update_run_enabled(self) -> None:
+        running = self._thread is not None
+        self.run_button.setEnabled(not running and bool(self.serial_edit.text().strip()))
+
     # ---- sweep lifecycle ----------------------------------------------
     def start_sweep(self) -> None:
-        if self._thread is not None:
+        serial = self.serial_edit.text().strip()
+        if self._thread is not None or not serial:
             return  # a sweep is already running
+        self._current_serial = serial
+        self.serial_edit.setEnabled(False)
         product = self._products[self.part_combo.currentText()]
         self.run_button.setEnabled(False)
         self.part_combo.setEnabled(False)
@@ -114,11 +134,16 @@ class MainWindow(QMainWindow):
             self._set_verdict("PASS", "#2e7d32")
         else:
             self._set_verdict("FAIL", "#c62828")
-        self._log(
-            f"{product.part_number}: {'PASS' if result.passed else 'FAIL'} | "
-            f"worst margin {result.worst_margin_db:+.2f} dB at {result.worst_freq_hz / 1e9:.2f} GHz | "
-            f"{result.failing_points} failing point(s)"
-        )
+            self._log(
+                f"{product.part_number}: {'PASS' if result.passed else 'FAIL'} | "
+                f"worst margin {result.worst_margin_db:+.2f} dB at {result.worst_freq_hz / 1e9:.2f} GHz | "
+                f"{result.failing_points} failing point(s)")
+
+        path = result_path(self._results_dir, product.part_number,
+                           self._current_serial, None)
+        write_csv(path, product, self._current_serial,
+                  freq, s21, result)
+        self._log(f"Saved {path.name}")
 
     def _on_failed(self, message: str) -> None:
         self._set_verdict("ERROR", "#e65100")
@@ -131,6 +156,10 @@ class MainWindow(QMainWindow):
         self._thread = None
         self.run_button.setEnabled(True)
         self.part_combo.setEnabled(True)
+        self.serial_edit.setEnabled(True)
+        self.serial_edit.selectAll()           # next scan or keystroke replaces the old serial
+        self.serial_edit.setFocus()
+        self._update_run_enabled()             # replaces run_button.setEnabled(True)
 
     def _plot(self, product: Product, freq, s21) -> None:
         self.ax.clear()
