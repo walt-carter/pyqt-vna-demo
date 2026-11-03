@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime
 from pathlib import Path
 
@@ -25,6 +26,8 @@ from .instrument import Instrument
 from .results import result_path, write_csv
 from .worker import SweepWorker
 
+logger = logging.getLogger(__name__)
+
 
 class MainWindow(QMainWindow):
     def __init__(
@@ -37,7 +40,11 @@ class MainWindow(QMainWindow):
         self._products = products
         self._thread: QThread | None = None
         self._worker: SweepWorker | None = None
+
+        # Make sure the results dir exists
+
         self._results_dir = results_dir
+        self._results_dir.mkdir(parents=True, exist_ok=True)
 
         # Controls
         self.part_combo = QComboBox()
@@ -151,8 +158,13 @@ class MainWindow(QMainWindow):
         path = result_path(
             self._results_dir, product.part_number, self._current_serial, None
         )
-        write_csv(path, product, self._current_serial, freq, s21, result)
-        self._log(f"Saved {path.name}")
+        try:
+            write_csv(path, product, self._current_serial, freq, s21, result)
+        except OSError:
+            logger.exception("Could not save results to %s", path)
+            self._log(f"Could not save results to  {path.name}")
+        else:
+            self._log(f"Saved {path.name}")
 
     def _on_failed(self, message: str) -> None:
         self._set_verdict("ERROR", "#e65100")

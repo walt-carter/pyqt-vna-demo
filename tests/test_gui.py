@@ -34,7 +34,7 @@ def test_sweep_shows_verdict(qtbot, part, verdict):
 @pytest.fixture
 def window(qtbot, tmp_path):
     win = MainWindow(
-        SimulatedVNA(sweep_time_s=0, seed=3), load_products(CONFIG), RESULTS_DIR
+        SimulatedVNA(sweep_time_s=0, seed=3), load_products(CONFIG), tmp_path
     )
     qtbot.addWidget(win)
     win.part_combo.setCurrentText("CABLE-0.5M-DEMO")
