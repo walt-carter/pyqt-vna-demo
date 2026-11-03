@@ -2,25 +2,24 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-from datetime import datetime
-
-import numpy as np
 import csv
 import re
+from datetime import datetime
+from pathlib import Path
 
+import numpy as np
 
 from .analysis import Result
 from .config import Product
 
 
 def write_csv(
-        path: Path,
-        product: Product,
-        serial: str,
-        freq_hz: np.ndarray,
-        s21_db: np.ndarray,
-        result: Result,
+    path: Path,
+    product: Product,
+    serial: str,
+    freq_hz: np.ndarray,
+    s21_db: np.ndarray,
+    result: Result,
 ) -> None:
     """Write the results to a CSV file"""
 
@@ -28,8 +27,9 @@ def write_csv(
 
     if len(freq_hz) != len(s21_db):
         raise ValueError(
-            f"Frequency and S21 arrays differ in length ({len(freq_hz)} vs {len(s21_db)}.")
-    
+            f"Frequency and S21 arrays differ in length ({len(freq_hz)} vs {len(s21_db)}."
+        )
+
     # build a metadata block
 
     metadata = {
@@ -40,21 +40,20 @@ def write_csv(
         "sweep": f"{product.sweep.start_hz / 1e9:.3f}-{product.sweep.stop_hz / 1e9:.3f} GHz, {product.sweep.points} points",
         "verdict": f"{'PASS' if result.passed else 'FAIL'}",
         "worst_margin_db": f"{result.worst_margin_db:+.3f}",
-        "worst_freq_ghz": f"{result.worst_freq_hz / 1e9:.3f}"
+        "worst_freq_ghz": f"{result.worst_freq_hz / 1e9:.3f}",
     }
 
     with open(path, "w", newline="", encoding="utf-8") as f:
-        for key, value in metadata.items():
-            f.write(f"# {key}: {value}\n")
+        f.writelines(f"# {key}: {value}\n" for key, value in metadata.items())
 
         writer = csv.writer(f)
         writer.writerow(["frequency_hz", "s21_db"])
         writer.writerows(zip(freq_hz, s21_db))
-    return
 
 
-def result_path(results_dir: Path, part_number: str, serial: str,
-                when: datetime | None = None) -> Path:
+def result_path(
+    results_dir: Path, part_number: str, serial: str, when: datetime | None = None
+) -> Path:
     """Pick a filename based on part number, serial, and date/timestamp"""
 
     when = when or datetime.now().astimezone()

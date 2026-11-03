@@ -15,6 +15,7 @@ CONFIG = Path(__file__).parent.parent / "config" / "products.json"
 
 # ---- helpers / fixtures ---------------------------------------------------
 
+
 def read_back(path: Path) -> tuple[dict[str, str], list[str], np.ndarray]:
     """Parse a results CSV: '# key: value' lines, a column header, then numeric rows."""
     metadata, data_lines = {}, []
@@ -34,11 +35,14 @@ def sample():
     product = load_products(CONFIG)["CABLE-0.5M-DEMO"]
     freq = np.array([10e6, 20e9, 40e9])
     s21 = np.array([-0.0312, -1.2345, -1.9876])
-    result = Result(passed=True, worst_margin_db=0.52, worst_freq_hz=40e9, failing_points=0)
+    result = Result(
+        passed=True, worst_margin_db=0.52, worst_freq_hz=40e9, failing_points=0
+    )
     return product, freq, s21, result
 
 
 # ---- write_csv ------------------------------------------------------------
+
 
 def test_round_trip_metadata_and_data(tmp_path, sample):
     product, freq, s21, result = sample
@@ -51,7 +55,9 @@ def test_round_trip_metadata_and_data(tmp_path, sample):
     assert header == ["frequency_hz", "s21_db"]
     assert data.shape == (3, 2)
     np.testing.assert_allclose(data[:, 0], freq)
-    np.testing.assert_allclose(data[:, 1], s21, atol=1e-4)   # matches the precision you write
+    np.testing.assert_allclose(
+        data[:, 1], s21, atol=1e-4
+    )  # matches the precision you write
 
 
 def test_verdict_recorded(tmp_path, sample):
@@ -59,7 +65,7 @@ def test_verdict_recorded(tmp_path, sample):
     path = tmp_path / "out.csv"
     write_csv(path, product, "SN-001", freq, s21, result)
     metadata, _, _ = read_back(path)
-    assert metadata["verdict"] == "PASS"        # or "verdict" == "PASS", whatever you chose
+    assert metadata["verdict"] == "PASS"  # or "verdict" == "PASS", whatever you chose
 
 
 def test_timestamp_keeps_colons_inside_file(tmp_path, sample):
@@ -68,7 +74,7 @@ def test_timestamp_keeps_colons_inside_file(tmp_path, sample):
     path = tmp_path / "out.csv"
     write_csv(path, product, "SN-001", freq, s21, result)
     metadata, _, _ = read_back(path)
-    datetime.fromisoformat(metadata["timestamp"])   # raises if it was mangled
+    datetime.fromisoformat(metadata["timestamp"])  # raises if it was mangled
 
 
 def test_no_blank_lines_between_rows(tmp_path, sample):

@@ -1,27 +1,28 @@
 """Entry point.
 
-    python app.py                       # simulated VNA
-    python app.py --visa TCPIP0::192.168.1.50::inst0::INSTR
+python app.py                       # simulated VNA
+python app.py --visa TCPIP0::192.168.1.50::inst0::INSTR
 """
 
 from __future__ import annotations
+
 import argparse
 import logging
-import sys
 import os
+import sys
 
-logging.basicConfig(level=logging.INFO,
-                    format="%(asctime)s %(levelname)s %(name)s: %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+)
 
 from pathlib import Path
 
-from PyQt6.QtWidgets import QApplication, QMessageBox
 from platformdirs import user_data_dir
+from PyQt6.QtWidgets import QApplication, QMessageBox
 
 from vna_demo.config import load_products
 from vna_demo.instrument import SimulatedVNA, VisaVNA
 from vna_demo.main_window import MainWindow
-
 
 APP_NAME = "VNA-Test-Demo"
 
@@ -63,11 +64,14 @@ def default_data_dir() -> Path:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="PyQt VNA test demo")
-    parser.add_argument("--config", default=config_dir().parent / "config" / "products.json")
-    parser.add_argument("--visa", metavar="RESOURCE", help="VISA resource string for a real VNA")
+    parser.add_argument(
+        "--config", default=config_dir().parent / "config" / "products.json"
+    )
+    parser.add_argument(
+        "--visa", metavar="RESOURCE", help="VISA resource string for a real VNA"
+    )
     parser.add_argument("--results-dir", type=Path, default=default_data_dir())
 
-    
     args = parser.parse_args()
 
     app = QApplication(sys.argv)

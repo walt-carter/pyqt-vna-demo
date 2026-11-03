@@ -54,9 +54,15 @@ class SimulatedVNA(Instrument):
     makes runs repeatable for tests.
     """
 
-    def __init__(self, skin_coeff: float = 0.25, dielectric_coeff: float = 0.012,
-                 noise_db: float = 0.05, sweep_time_s: float = 1.5, seed: int | None = None):
-        self.skin_coeff = skin_coeff            # dB per sqrt(GHz)
+    def __init__(
+        self,
+        skin_coeff: float = 0.25,
+        dielectric_coeff: float = 0.012,
+        noise_db: float = 0.05,
+        sweep_time_s: float = 1.5,
+        seed: int | None = None,
+    ):
+        self.skin_coeff = skin_coeff  # dB per sqrt(GHz)
         self.dielectric_coeff = dielectric_coeff  # dB per GHz
         self.noise_db = noise_db
         self.sweep_time_s = sweep_time_s

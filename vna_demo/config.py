@@ -15,6 +15,7 @@ from .instrument import SweepSettings
 @dataclass(frozen=True)
 class LimitSegment:
     """S21 must stay at or above ``min_db`` between start and stop frequency."""
+
     start_hz: float
     stop_hz: float
     min_db: float
@@ -39,12 +40,20 @@ def load_products(path: str | Path) -> dict[str, Product]:
                 points=int(entry["sweep"]["points"]),
             )
             limits = tuple(
-                LimitSegment(float(seg["start_hz"]), float(seg["stop_hz"]), float(seg["min_db"]))
+                LimitSegment(
+                    float(seg["start_hz"]), float(seg["stop_hz"]), float(seg["min_db"])
+                )
                 for seg in entry["limits"]
             )
-            product = Product(entry["part_number"], entry.get("description", ""), sweep, limits)
+            product = Product(
+                entry["part_number"], entry.get("description", ""), sweep, limits
+            )
         except (KeyError, TypeError, ValueError) as exc:
-            name = entry.get("part_number", "<unnamed>") if isinstance(entry, dict) else "<invalid>"
+            name = (
+                entry.get("part_number", "<unnamed>")
+                if isinstance(entry, dict)
+                else "<invalid>"
+            )
             raise ValueError(f"Bad product definition for {name}: {exc}") from exc
         if product.part_number in products:
             raise ValueError(f"Duplicate part number: {product.part_number}")
