@@ -11,5 +11,6 @@ dependencies:
   - pip
   - pytest-qt
   - pyinstaller
+  - platformdirs
   - pip:
       - PyQt6

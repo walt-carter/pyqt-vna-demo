@@ -21,7 +21,8 @@ class SweepSettings:
     stop_hz: float
     points: int
 
-    def validate(self) -> None:
+    def __post_init__(self):
+        """Check the results of the assignment"""
         if self.start_hz <= 0 or self.stop_hz <= self.start_hz:
             raise ValueError("Sweep must have 0 < start < stop.")
         if not 2 <= self.points <= 100_001:
@@ -53,9 +54,15 @@ class SimulatedVNA(Instrument):
     makes runs repeatable for tests.
     """
 
-    def __init__(self, skin_coeff: float = 0.25, dielectric_coeff: float = 0.012,
-                 noise_db: float = 0.05, sweep_time_s: float = 1.5, seed: int | None = None):
-        self.skin_coeff = skin_coeff            # dB per sqrt(GHz)
+    def __init__(
+        self,
+        skin_coeff: float = 0.25,
+        dielectric_coeff: float = 0.012,
+        noise_db: float = 0.05,
+        sweep_time_s: float = 1.5,
+        seed: int | None = None,
+    ):
+        self.skin_coeff = skin_coeff  # dB per sqrt(GHz)
         self.dielectric_coeff = dielectric_coeff  # dB per GHz
         self.noise_db = noise_db
         self.sweep_time_s = sweep_time_s
@@ -66,7 +73,6 @@ class SimulatedVNA(Instrument):
         return "SIMULATED,VNA-DEMO,0001,1.0"
 
     def configure(self, sweep: SweepSettings) -> None:
-        sweep.validate()
         self._sweep = sweep
 
     def measure_s21_db(self) -> tuple[np.ndarray, np.ndarray]:
